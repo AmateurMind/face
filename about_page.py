@@ -22,7 +22,6 @@ def show_about_page():
     if st.button("Give it a shot"):
         st.session_state.app_mode = "Person Monitoring"
         st.rerun()  # Force rerun to redirect to monitoring page
-    st.markdown("Choose the mode👈")
     col1, col2 = st.columns(2, gap="small")
     with col1:
         st_lottie(lottie_intro, height=230, key="intro")
