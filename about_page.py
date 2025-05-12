@@ -19,6 +19,9 @@ def show_about_page():
 
     # --- HERO SECTION ---
     st.title("Facial Emotion Detection😎")
+    if st.button("Give it a shot"):
+        st.session_state.app_mode = "Person Monitoring"
+        st.rerun()  # Force rerun to redirect to monitoring page
     st.markdown("Choose the mode👈")
     col1, col2 = st.columns(2, gap="small")
     with col1:
