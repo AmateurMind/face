@@ -4,8 +4,6 @@ from emotion_detector import EmotionDetector
 import about_page
 import patient_monitoring  # Rename this module too if needed
 
-# Disable TensorFlow warnings
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 def main():
     # Set page config
     st.set_page_config(page_title="Emotion Detection App", page_icon="🔍", layout="wide")
