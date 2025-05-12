@@ -2,13 +2,12 @@
 streamlit>=1.32
 numpy
 opencv-python-headless
+opencv-contrib-python
 
 
 # Machine learning and image processing
 tensorflow==2.19.0
 tf-keras
-opencv-python-headless
-numpy
 pandas
 matplotlib
 deepface
