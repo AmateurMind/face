@@ -19,7 +19,7 @@ def main():
     if 'app_mode' in st.session_state:
         app_mode = st.session_state.app_mode
     if app_mode == "About":
-        st.sidebar.image("./assets/wow.png", use_column_width=True)
+        st.sidebar.image("./assets/wow.png", use_container_width=True)
         st.sidebar.markdown("**Hey Bro🖐️**")
     # Main page
     if app_mode == "About":
