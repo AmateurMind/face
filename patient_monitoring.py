@@ -43,15 +43,7 @@ def show_person_monitoring():
         """)
 
     available_cameras = get_available_cameras()
-    if not available_cameras:
-        st.error("""
-        No cameras detected!  
-        Please ensure:  
-        - Camera is connected  
-        - Camera is not in use by another application  
-        - Camera drivers are installed
-        """)
-        return
+    
 
     if 'monitoring_active' not in st.session_state:
         st.session_state.monitoring_active = False
