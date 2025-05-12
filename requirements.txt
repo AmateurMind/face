@@ -2,6 +2,7 @@
 streamlit>=1.32
 numpy
 opencv-python-headless
+streamlit-webrtc
 opencv-contrib-python
 
 # Machine learning and image processing
@@ -19,4 +20,4 @@ plotly
 requests
 openai
 streamlit-lottie
-
+openpyxl
