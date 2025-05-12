@@ -15,7 +15,7 @@ def main():
     st.sidebar.title("🎈Options")
     app_mode = st.sidebar.selectbox("Choose Mode", ["About", "Person Monitoring"])  # Renamed
     if app_mode == "About":
-        st.sidebar.image("./assets/wow.png", use_column_width=True)
+        st.sidebar.image("./assets/wow.png", use_container_width=True)
         st.sidebar.markdown("**Hey Bro🖐️**")
     # Main page
     if app_mode == "About":
