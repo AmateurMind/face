@@ -1,32 +1,26 @@
-# Minimal requirements with explicit versions
-streamlit==1.33.0
-# Core scientific computing
-numpy==1.23.5
-pandas==2.0.1
-scipy==1.10.1
-matplotlib==3.7.1
-plotly==5.18.0
-
-# Machine Learning
-tensorflow==2.15.0
-tf-keras
-
-# Additional libraries
-opencv-python==4.8.0.74
-Pillow==10.2.0
-requests==2.31.0
-XlsxWriter==3.2.0
-
-# Streamlit extensions
-streamlit-webrtc==0.47.1
+# Core Streamlit and Web Frameworks
+streamlit==1.36.0
 streamlit-lottie==0.0.5
+streamlit-webrtc==0.47.9
 
-# Resolve potential conflicts
-rich==13.7.1
-Pygments==2.17.2
-markdown-it-py==3.0.0
-mdurl==0.1.2
+# Scientific Computing and Data Manipulation
+numpy==1.23.5
+pandas==2.0.3
+scipy==1.10.1
+matplotlib==3.7.5
+plotly==5.14.1
 
-# Deep learning specific
-deepface==0.3.79
+# Machine Learning and Deep Learning
+tensorflow==2.13.0
+keras==2.13.1
+opencv-python==4.11.0.86
+opencv-contrib-python==4.11.0.86
+deepface==0.0.79
 mtcnn==0.1.1
+
+# Image Processing
+Pillow==10.4.0
+
+# Utilities
+requests==2.31.1
+XlsxWriter==3.2.3
