@@ -6,19 +6,6 @@ import pandas as pd
 from emotion_detector import EmotionDetector, get_emotion_emoji
 
 
-def get_available_cameras(max_to_check=5):
-    available_cameras = []
-    for i in range(max_to_check):
-        try:
-            cap = cv2.VideoCapture(i)
-            if cap.isOpened():
-                ret, frame = cap.read()
-                if ret and frame is not None and frame.size > 0:
-                    available_cameras.append(i)
-                cap.release()
-        except Exception as e:
-            st.warning(f"Error checking camera {i}: {str(e)}")
-    return available_cameras
 
 
 def show_person_monitoring():
