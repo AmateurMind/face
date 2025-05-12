@@ -66,7 +66,8 @@ def show_person_monitoring():
             st.session_state.monitoring_active = True
             st.session_state.monitoring_start_time = time.time()
             st.session_state.monitoring_end_time = st.session_state.monitoring_start_time + (duration_minutes * 60)
-            st.experimental_rerun()
+            st.rerun()
+
     
     # Display monitoring progress
     if st.session_state.monitoring_active:
