@@ -1,26 +1,11 @@
-# Core Streamlit and Web Frameworks
-streamlit==1.36.0
-streamlit-lottie==0.0.5
-streamlit-webrtc==0.47.9
-
-# Scientific Computing and Data Manipulation
-numpy==1.23.5
-pandas==2.0.3
-scipy==1.10.1
-matplotlib==3.7.5
-plotly==5.14.1
-
-# Machine Learning and Deep Learning
-tensorflow==2.13.0
-keras==2.13.1
-opencv-python==4.11.0.86
-opencv-contrib-python==4.11.0.86
-deepface==0.0.79
-mtcnn==0.1.1
-
-# Image Processing
-Pillow==10.4.0
-
-# Utilities
-requests==2.31.1
-XlsxWriter==3.2.3
+pip>=25.1.1
+streamlit
+opencv-python-headless
+tensorflow==2.19.0
+tf-keras
+deepface
+mtcnn
+numpy
+pandas
+matplotlib
+requests
