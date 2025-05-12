@@ -1,6 +1,8 @@
 # Streamlit core
 streamlit>=1.32
-streamlit-webrtc>=0.45.0
+numpy
+opencv-python-headless
+
 
 # Machine learning and image processing
 tensorflow==2.19.0
