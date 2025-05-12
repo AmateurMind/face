@@ -1,4 +1,6 @@
-
+pip>=24.0
+setuptools>=69.0.0
+wheel>=0.42.0
 streamlit==1.33.0
 streamlit-webrtc==0.47.1
 streamlit-lottie==0.0.5
@@ -15,3 +17,7 @@ scipy==1.10.1
 plotly==5.18.0
 requests==2.31.0
 XlsxWriter==3.2.0
+rich==14.0.0
+Pygments==2.19.1
+markdown-it-py==3.0.0
+mdurl==0.1.2
