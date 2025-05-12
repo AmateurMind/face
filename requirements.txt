@@ -21,3 +21,5 @@ requests
 openai
 streamlit-lottie
 openpyxl
+xlsxwriter 
+logging
