@@ -4,39 +4,6 @@ import time
 import plotly.express as px
 import pandas as pd
 from emotion_detector import EmotionDetector, get_emotion_emoji
-# Add this function to your existing code
-def safe_camera_access(camera_id=0):
-    """
-    Safely attempt to access camera with multiple fallback options
-    """
-    # Try primary camera
-    cap = cv2.VideoCapture(camera_id)
-    
-    # Check alternative camera indices if first attempt fails
-    alternative_indices = [1, 2, -1]
-    for alt_index in alternative_indices:
-        if not cap.isOpened():
-            cap = cv2.VideoCapture(alt_index)
-    
-    # Provide clear error if no camera found
-    if not cap.isOpened():
-        st.error("""
-        Could not open camera. Possible reasons:
-        - No camera connected
-        - Camera is in use by another application
-        - Camera drivers not installed
-        - Running on a server without camera access
-        """)
-        return None
-    
-    return cap
-
-# Modify your camera initialization
-cap = safe_camera_access()
-if cap is None:
-    # Implement fallback or mock mode
-    st.warning("Camera access failed. Using alternative mode.")
-    # Add alternative functionality here
 
 def show_person_monitoring():
     st.title("Emotion Monitoring")
