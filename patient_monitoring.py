@@ -3,7 +3,31 @@ import cv2
 import time
 import plotly.express as px
 import pandas as pd
+import numpy as np
 from emotion_detector import EmotionDetector, get_emotion_emoji
+
+def get_available_cameras(max_to_check=5):
+    """
+    Detect and list available cameras
+    
+    Returns:
+    - List of working camera indices
+    """
+    available_cameras = []
+    
+    for i in range(max_to_check):
+        try:
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                # Try to read a frame
+                ret, frame = cap.read()
+                if ret and frame is not None and frame.size > 0:
+                    available_cameras.append(i)
+                cap.release()
+        except Exception as e:
+            st.warning(f"Error checking camera {i}: {str(e)}")
+    
+    return available_cameras
 
 def show_person_monitoring():
     st.title("Emotion Monitoring")
@@ -28,6 +52,20 @@ def show_person_monitoring():
         - Requires Python 3.6+ and DeepFace
         """)
 
+    # Check available cameras
+    available_cameras = get_available_cameras()
+    
+    if not available_cameras:
+        st.error("""
+        No cameras detected! 
+        Please ensure:
+        - Camera is connected
+        - Camera is not in use by another application
+        - Camera drivers are installed
+        """)
+        return
+
+    # Initialize session state variables
     if 'monitoring_active' not in st.session_state:
         st.session_state.monitoring_active = False
     
@@ -46,8 +84,10 @@ def show_person_monitoring():
         
         person_id = st.text_input("User ID", "P12345")
         
-        # Using default camera (ID 0)
-        camera_id = 0
+        # Camera selection
+        camera_id = st.selectbox("Select Camera", available_cameras, 
+                                 index=0, 
+                                 help="Choose from available cameras")
         
         col3, col4 = st.columns(2)
         
@@ -101,11 +141,11 @@ def show_person_monitoring():
         with emotion_col:
             emotion_chart = st.empty()
         
-        # Open camera
+        # Open camera with selected camera ID
         cap = cv2.VideoCapture(camera_id)
         
         if not cap.isOpened():
-            st.error("Could not open camera. Please check if camera is connected.")
+            st.error(f"Could not open camera with index {camera_id}. Please check camera connections.")
             st.session_state.monitoring_active = False
         else:
             last_analysis_time = 0
@@ -136,9 +176,9 @@ def show_person_monitoring():
                     # Capture frame
                     ret, frame = cap.read()
                     
-                    if not ret:
-                        st.error("Failed to capture frame")
-                        continue
+                    if not ret or frame is None or frame.size == 0:
+                        st.error("Failed to capture frame. Camera may have been disconnected.")
+                        break
                     
                     # Display video
                     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
