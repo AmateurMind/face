@@ -3,10 +3,31 @@ import cv2
 import time
 import plotly.express as px
 import pandas as pd
+import numpy as np
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 from emotion_detector import EmotionDetector, get_emotion_emoji
 
+class EmotionVideoTransformer(VideoTransformerBase):
+    def __init__(self, person_id, interval_seconds):
+        self.person_detector = EmotionDetector(person_id)
+        self.interval_seconds = interval_seconds
+        self.last_analysis_time = 0
+        self.current_emotion = None
+        self.emotion_emoji = None
 
-
+    def transform(self, frame):
+        # Convert WebRTC frame to OpenCV format
+        img = frame.to_ndarray(format="bgr")
+        
+        current_time = time.time()
+        if current_time - self.last_analysis_time >= self.interval_seconds:
+            emotion_data = self.person_detector.analyze_frame(img)
+            if emotion_data:
+                self.current_emotion = emotion_data['dominant_emotion']
+                self.emotion_emoji = get_emotion_emoji(self.current_emotion)
+                self.last_analysis_time = current_time
+        
+        return img
 
 def show_person_monitoring():
     st.title("Emotion Monitoring")
@@ -15,7 +36,7 @@ def show_person_monitoring():
     st.sidebar.title("Emotion Monitor")
     st.sidebar.markdown("""
     ### Instructions
-    1. Enter information  
+    1. Allow camera access  
     2. Set monitoring duration and interval  
     3. Click "Start Monitoring"  
     4. Review results and export data when done
@@ -23,14 +44,11 @@ def show_person_monitoring():
 
     with st.sidebar.expander("System Requirements"):
         st.markdown("""
-        - Webcam must be connected  
+        - Camera access required  
         - Good lighting for accurate detection  
         - Person should face the camera  
         - Requires Python 3.6+ and DeepFace
         """)
-
-    available_cameras = get_available_cameras()
-    
 
     if 'monitoring_active' not in st.session_state:
         st.session_state.monitoring_active = False
@@ -44,7 +62,6 @@ def show_person_monitoring():
     with st.form("person_form"):
         st.subheader("Information")
         person_id = st.text_input("User ID", "P12345")
-        camera_id = st.selectbox("Select Camera", available_cameras, index=0)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -55,7 +72,6 @@ def show_person_monitoring():
         submit_button = st.form_submit_button("Start Monitoring")
 
         if submit_button:
-            st.session_state.person_detector = EmotionDetector(person_id)
             st.session_state.monitoring_active = True
             st.session_state.monitoring_start_time = time.time()
             st.session_state.monitoring_end_time = st.session_state.monitoring_start_time + (duration_minutes * 60)
@@ -74,68 +90,43 @@ def show_person_monitoring():
         time_remaining = col1.empty()
         readings_count = col2.empty()
 
-        video_col, emotion_col = st.columns([3, 2])
-        video_placeholder = video_col.empty()
-        current_emotion = video_col.empty()
-        emotion_chart = emotion_col.empty()
+        # WebRTC Streamer
+        video_transformer = EmotionVideoTransformer(person_id, interval_seconds)
+        webrtc_ctx = webrtc_streamer(
+            key="emotion-monitoring",
+            video_transformer_factory=lambda: video_transformer,
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+        )
 
-        cap = cv2.VideoCapture(camera_id)
-        if not cap.isOpened():
-            st.error(f"Could not open camera with index {camera_id}.")
-            st.session_state.monitoring_active = False
-            return
+        # Display current emotion if available
+        if video_transformer.current_emotion:
+            st.markdown(f"## Current: {video_transformer.current_emotion} {video_transformer.emotion_emoji}")
 
-        last_analysis_time = 0
-        try:
-            while st.session_state.monitoring_active:
-                current_time = time.time()
-                if current_time >= st.session_state.monitoring_end_time:
-                    st.session_state.monitoring_active = False
-                    break
+        # Monitoring time and progress tracking
+        while st.session_state.monitoring_active:
+            current_time = time.time()
+            if current_time >= st.session_state.monitoring_end_time:
+                st.session_state.monitoring_active = False
+                break
 
-                elapsed = current_time - st.session_state.monitoring_start_time
-                total_duration = st.session_state.monitoring_end_time - st.session_state.monitoring_start_time
-                progress_bar.progress(min(elapsed / total_duration, 1.0))
+            elapsed = current_time - st.session_state.monitoring_start_time
+            total_duration = st.session_state.monitoring_end_time - st.session_state.monitoring_start_time
+            progress_bar.progress(min(elapsed / total_duration, 1.0))
 
-                time_left = int(st.session_state.monitoring_end_time - current_time)
-                m, s = divmod(time_left, 60)
-                time_remaining.markdown(f"**Time Remaining:** {m}m {s}s")
-                readings_count.markdown(f"**Readings:** {len(st.session_state.person_detector.emotions_log)}")
+            time_left = int(st.session_state.monitoring_end_time - current_time)
+            m, s = divmod(time_left, 60)
+            time_remaining.markdown(f"**Time Remaining:** {m}m {s}s")
+            
+            # Update readings count if emotions are being logged
+            if hasattr(video_transformer, 'person_detector'):
+                readings_count.markdown(f"**Readings:** {len(video_transformer.person_detector.emotions_log)}")
 
-                ret, frame = cap.read()
-                if not ret or frame is None or frame.size == 0:
-                    st.error("Failed to capture frame.")
-                    break
+            time.sleep(1)
 
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                video_placeholder.image(frame_rgb, channels="RGB", use_column_width=True)
-
-                if current_time - last_analysis_time >= interval_seconds:
-                    emotion_data = st.session_state.person_detector.analyze_frame(frame)
-                    if emotion_data:
-                        emotion = emotion_data['dominant_emotion']
-                        emoji = get_emotion_emoji(emotion)
-                        current_emotion.markdown(f"## Current: {emotion} {emoji}")
-
-                        if st.session_state.person_detector.emotions_log:
-                            df, summary_df = st.session_state.person_detector.get_summary()
-                            fig = px.pie(summary_df, values='Percentage', names='Emotion',
-                                         title='Emotion Distribution',
-                                         color_discrete_sequence=px.colors.qualitative.Plotly)
-                            fig.update_traces(textposition='inside', textinfo='percent+label')
-                            emotion_chart.plotly_chart(fig, use_container_width=True)
-                    last_analysis_time = current_time
-
-                time.sleep(0.1)
-        except Exception as e:
-            st.error(f"Error during monitoring: {e}")
-        finally:
-            cap.release()
-            st.session_state.monitoring_active = False
-
-    if not st.session_state.monitoring_active and st.session_state.person_detector and st.session_state.person_detector.emotions_log:
+    # Display results after monitoring
+    if not st.session_state.monitoring_active and video_transformer.person_detector and video_transformer.person_detector.emotions_log:
         st.subheader("Monitoring Results")
-        df, summary_df = st.session_state.person_detector.get_summary()
+        df, summary_df = video_transformer.person_detector.get_summary()
 
         col1, col2 = st.columns(2)
         with col1:
@@ -150,7 +141,7 @@ def show_person_monitoring():
             st.plotly_chart(fig2, use_container_width=True)
 
         timeline_data = [{'Timestamp': e['timestamp'], 'Emotion': e['dominant_emotion']}
-                         for e in st.session_state.person_detector.emotions_log]
+                         for e in video_transformer.person_detector.emotions_log]
         timeline_df = pd.DataFrame(timeline_data)
 
         fig3 = px.scatter(timeline_df, x='Timestamp', y='Emotion', title='Emotion Timeline',
@@ -159,9 +150,12 @@ def show_person_monitoring():
 
         st.subheader("Export Data")
         if st.button("Generate Report"):
-            excel_data, filename = st.session_state.person_detector.export_to_excel()
+            excel_data, filename = video_transformer.person_detector.export_to_excel()
             st.download_button("Download Excel Report", data=excel_data, file_name=filename,
                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         with st.expander("View Raw Data"):
             st.dataframe(df)
+
+# Requirements for this script
+# pip install streamlit streamlit-webrtc opencv-python plotly pandas deepface openpyxl
